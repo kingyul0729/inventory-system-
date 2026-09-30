@@ -25,8 +25,6 @@ python3 -m http.server 8080
 
 GitHub Pages 등 정적 호스팅에 그대로 올려도 동작합니다.
 
-다채움피부과 동의서는 재고관리와 별개로 `dachaeum-consent.html`을 더블클릭해 따로 엽니다.
-
 ## CSV 형식
 
 ```
@@ -45,7 +43,6 @@ index.html           화면
 src/inventory.js     재고 로직 (순수 함수, UI와 분리)
 src/app.js           화면 렌더링·이벤트·저장
 src/style.css        스타일 (다크 모드 지원)
-dachaeum-consent.html 다채움피부과 동의서 v3 (단일 파일 번들, 그대로 열어 사용)
 test/                로직 단위 테스트
 ```
 
