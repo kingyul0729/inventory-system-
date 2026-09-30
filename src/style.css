@@ -50,6 +50,8 @@ body {
 .tabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .tab { border: none; background: none; padding: 8px 12px; border-radius: 6px; color: var(--muted); }
 .tab.active { background: var(--bg); color: var(--text); font-weight: 600; }
+.tab-link { padding: 8px 12px; border-radius: 6px; color: var(--muted); text-decoration: none; }
+.tab-link:hover { color: var(--text); }
 
 main { padding: 24px; max-width: 1280px; margin: 0 auto; }
 .view { display: none; }
