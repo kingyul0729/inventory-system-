@@ -41,6 +41,16 @@
     }
   }
 
+  // 다른 탭에서 저장하면 이 탭의 데이터를 최신으로 바꿈. 이렇게 하지 않으면
+  // 이 탭이 가진 예전 데이터로 저장하면서 다른 탭의 변경을 덮어쓰게 됨.
+  window.addEventListener('storage', (e) => {
+    if (e.storageArea !== localStorage || (e.key !== STORAGE_KEY && e.key !== null)) return;
+    state = load();
+    render();
+    refreshOpenDialogs();
+    toast('다른 탭에서 변경된 내용을 반영했습니다.');
+  });
+
   function commit(message) {
     save();
     render();
@@ -284,14 +294,29 @@
     txForm.reset();
     $('#tx-error').textContent = '';
     $('#tx-dialog-title').textContent = TX_LABEL[type];
-    $('#tx-item-info').textContent = `${item.sku} · ${item.name} — 현재고 ${fmtNum(item.quantity)}${item.unit}`;
     $('#tx-qty-label').firstChild.textContent = type === TX_ADJUST ? '실사 수량' : '수량';
     txForm.elements.qty.min = type === TX_ADJUST ? 0 : 1;
-    if (type === TX_OUT) txForm.elements.qty.max = item.quantity;
-    else txForm.elements.qty.removeAttribute('max');
+    showTxItemInfo(item);
     if (type === TX_ADJUST) txForm.elements.qty.value = item.quantity;
     txDialog.showModal();
     txForm.elements.qty.select();
+  }
+
+  function showTxItemInfo(item) {
+    $('#tx-item-info').textContent = `${item.sku} · ${item.name} — 현재고 ${fmtNum(item.quantity)}${item.unit}`;
+    if (txTarget.type === TX_OUT) txForm.elements.qty.max = item.quantity;
+    else txForm.elements.qty.removeAttribute('max');
+  }
+
+  // 입력창이 열린 채로 다른 탭에서 데이터가 바뀐 경우: 현재고 표시를 갱신하고,
+  // 대상 품목이 삭제되었으면 입력창을 닫음.
+  function refreshOpenDialogs() {
+    const gone = (id) => !state.items.some((i) => i.id === id);
+    if (txDialog.open) {
+      if (gone(txTarget.id)) txDialog.close();
+      else showTxItemInfo(findItem(state, txTarget.id));
+    }
+    if (itemDialog.open && editingId && gone(editingId)) itemDialog.close();
   }
 
   txForm.addEventListener('submit', (e) => {
