@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {
+import '../src/inventory.js';
+
+const {
   createState, addItem, updateItem, deleteItem, stockIn, stockOut, adjustStock,
   summarize, filterItems, categories, isLowStock,
   itemsToCsv, parseCsv, importItemsCsv, TX_IN, TX_OUT, TX_ADJUST,
-} from '../src/inventory.js';
+} = globalThis.Inventory;
 
 const NOW = '2026-01-01T00:00:00.000Z';
 

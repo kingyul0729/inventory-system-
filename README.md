@@ -15,7 +15,7 @@
 
 ## 실행
 
-ES 모듈을 사용하므로 `index.html`을 파일로 직접 열지 말고 로컬 웹 서버로 여세요.
+`index.html`을 더블클릭해 브라우저로 바로 열면 됩니다. 로컬 웹 서버로 열어도 됩니다.
 
 ```bash
 npm start          # http://localhost:8080
