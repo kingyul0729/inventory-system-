@@ -45,10 +45,7 @@ index.html           화면
 src/inventory.js     재고 로직 (순수 함수, UI와 분리)
 src/app.js           화면 렌더링·이벤트·저장
 src/style.css        스타일 (다크 모드 지원)
-consent.html         이용·환불 동의서 (일반 양식)
 dachaeum-consent.html 다채움피부과 동의서 v3 (단일 파일 번들, 그대로 열어 사용)
-src/consent.js       동의서 양식·서명
-src/consent.css      동의서·인쇄 스타일
 test/                로직 단위 테스트
 ```
 
