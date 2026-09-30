@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>재고관리 시스템</title>
+  <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>재고관리</h1>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-view="dashboard">대시보드</button>
+      <button class="tab" data-view="items">품목</button>
+      <button class="tab" data-view="history">입출고 이력</button>
+      <button class="tab" data-view="data">데이터</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- 대시보드 -->
+    <section id="view-dashboard" class="view active">
+      <div class="stats">
+        <div class="stat"><span>등록 품목</span><strong id="stat-items">0</strong></div>
+        <div class="stat"><span>총 재고 수량</span><strong id="stat-qty">0</strong></div>
+        <div class="stat"><span>재고 금액</span><strong id="stat-value">0원</strong></div>
+        <div class="stat warn"><span>안전재고 미달</span><strong id="stat-low">0</strong></div>
+        <div class="stat danger"><span>품절</span><strong id="stat-out">0</strong></div>
+      </div>
+      <div class="panels">
+        <div class="panel">
+          <h2>재고 부족 품목</h2>
+          <table>
+            <thead><tr><th>품목코드</th><th>품목명</th><th class="num">현재고</th><th class="num">안전재고</th><th></th></tr></thead>
+            <tbody id="low-stock-body"></tbody>
+          </table>
+        </div>
+        <div class="panel">
+          <h2>최근 입출고</h2>
+          <table>
+            <thead><tr><th>일시</th><th>구분</th><th>품목</th><th class="num">수량</th></tr></thead>
+            <tbody id="recent-tx-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 품목 -->
+    <section id="view-items" class="view">
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="품목코드, 품목명, 분류, 위치 검색">
+        <select id="category-filter"><option value="">전체 분류</option></select>
+        <label class="check"><input id="low-only" type="checkbox"> 부족 품목만</label>
+        <button id="btn-new-item" class="primary">+ 품목 등록</button>
+      </div>
+      <div class="table-wrap"><table class="items-table">
+        <thead>
+          <tr>
+            <th data-sort="sku">품목코드</th>
+            <th data-sort="name">품목명</th>
+            <th data-sort="category">분류</th>
+            <th data-sort="location">위치</th>
+            <th data-sort="quantity" class="num">현재고</th>
+            <th data-sort="minStock" class="num">안전재고</th>
+            <th data-sort="price" class="num">단가</th>
+            <th>작업</th>
+          </tr>
+        </thead>
+        <tbody id="items-body"></tbody>
+      </table></div>
+      <p id="items-empty" class="empty" hidden>표시할 품목이 없습니다.</p>
+    </section>
+
+    <!-- 이력 -->
+    <section id="view-history" class="view">
+      <div class="toolbar">
+        <input id="history-search" type="search" placeholder="품목코드, 품목명, 메모 검색">
+        <select id="history-type">
+          <option value="">전체 구분</option>
+          <option value="IN">입고</option>
+          <option value="OUT">출고</option>
+          <option value="ADJUST">조정</option>
+        </select>
+        <input id="history-from" type="date" aria-label="시작일">
+        <span>~</span>
+        <input id="history-to" type="date" aria-label="종료일">
+        <button id="btn-export-tx">CSV 내보내기</button>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>일시</th><th>구분</th><th>품목코드</th><th>품목명</th><th class="num">수량</th><th class="num">잔량</th><th>메모</th></tr></thead>
+        <tbody id="history-body"></tbody>
+      </table></div>
+      <p id="history-empty" class="empty" hidden>이력이 없습니다.</p>
+    </section>
+
+    <!-- 데이터 -->
+    <section id="view-data" class="view">
+      <div class="panel">
+        <h2>품목 CSV</h2>
+        <p>헤더: <code>sku,name,category,location,unit,quantity,minStock,price</code> (sku, name 필수). 이미 있는 품목코드는 정보가 갱신되고, 수량 차이는 조정 이력으로 기록됩니다.</p>
+        <div class="row">
+          <button id="btn-export-items">품목 CSV 내보내기</button>
+          <label class="button">CSV 가져오기<input id="import-csv" type="file" accept=".csv,text/csv" hidden></label>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>전체 백업</h2>
+        <p>품목과 모든 이력을 JSON 파일로 저장하거나 복원합니다. 데이터는 이 브라우저(localStorage)에 저장되므로 주기적으로 백업하세요.</p>
+        <div class="row">
+          <button id="btn-backup">백업 파일 저장</button>
+          <label class="button">백업 복원<input id="restore-json" type="file" accept=".json,application/json" hidden></label>
+          <button id="btn-sample">예시 데이터 불러오기</button>
+          <button id="btn-reset" class="danger">전체 초기화</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 품목 등록/수정 -->
+  <dialog id="item-dialog">
+    <form id="item-form" method="dialog">
+      <h2 id="item-dialog-title">품목 등록</h2>
+      <div class="grid">
+        <label>품목코드(SKU)*<input name="sku" required></label>
+        <label>품목명*<input name="name" required></label>
+        <label>분류<input name="category" list="category-list"></label>
+        <label>보관 위치<input name="location"></label>
+        <label>단위<input name="unit" placeholder="개"></label>
+        <label>단가(원)<input name="price" type="number" min="0" step="any" value="0"></label>
+        <label>안전재고<input name="minStock" type="number" min="0" step="1" value="0"></label>
+        <label id="initial-qty-field">초기 재고<input name="initialQty" type="number" min="0" step="1" value="0"></label>
+      </div>
+      <datalist id="category-list"></datalist>
+      <p class="error" id="item-error"></p>
+      <div class="actions">
+        <button type="button" data-close>취소</button>
+        <button type="submit" class="primary">저장</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- 입고/출고/조정 -->
+  <dialog id="tx-dialog">
+    <form id="tx-form" method="dialog">
+      <h2 id="tx-dialog-title">입고</h2>
+      <p id="tx-item-info" class="muted"></p>
+      <div class="grid one">
+        <label id="tx-qty-label">수량<input name="qty" type="number" min="0" step="1" required></label>
+        <label>메모<input name="memo" placeholder="거래처, 사유 등"></label>
+      </div>
+      <p class="error" id="tx-error"></p>
+      <div class="actions">
+        <button type="button" data-close>취소</button>
+        <button type="submit" class="primary">확인</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>

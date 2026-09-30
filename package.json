@@ -1,0 +1,11 @@
+{
+  "name": "inventory-system",
+  "version": "1.0.0",
+  "description": "브라우저에서 동작하는 재고관리 시스템",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "npx --yes http-server -c-1 -p 8080 .",
+    "test": "node --test test/*.test.js"
+  }
+}
