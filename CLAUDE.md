@@ -57,8 +57,8 @@ CSS 사용자 정의 속성이 유일한 토큰 체계다. 변환 도구(Style D
 | 글꼴 | `system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif` (웹폰트 없음) |
 | 글자 크기 | 본문 14 · 표머리/라벨 13 · 작은 버튼/배지 12 · 패널 제목 15 · 대화상자 제목 17 · 앱 제목 18 · 통계 숫자 22 (px) |
 | 숫자 | 금액·수량은 `.num` (오른쪽 정렬 + `tabular-nums`) |
-| 간격 | 4 · 8 · 12 · 16 · 20 · 24 px |
-| 모서리 | 입력·버튼 6 · 카드/표 10 · 대화상자 12 · 배지 999(알약) |
+| 간격 | 기본 단계 4 · 8 · 12 · 16 · 20 · 24 px. 예외(현재 코드): 입력·셀렉트 `7px 10px`, 표 셀 `8px 10px`, 토스트 `10px 16px`, 통계 카드 `14px 16px`, 작은 버튼 `3px 8px`, 배지 `1px 8px`, `code` `1px 4px`, 표 안 버튼 사이 `2px` — 새 컴포넌트는 기본 단계를 쓴다 |
+| 모서리 | `code` 4 · 입력·버튼 6 · 토스트 8 · 카드/표 10 · 대화상자 12 · 배지 999(알약) |
 
 ## 4. 컴포넌트 (CSS 클래스 + 기본 HTML 요소)
 
@@ -97,7 +97,18 @@ el('tr', { class: i.quantity === 0 ? 'out' : isLowStock(i) ? 'low' : '' },
 
 - **아이콘 시스템 없음.** 이미지·SVG·아이콘 폰트 파일이 하나도 없다.
 - 현재 쓰는 기호: 정렬 표시 `▲`/`▼` (CSS `::after` 문자), 추가 버튼 `+`.
-- Figma 에 아이콘이 있으면: **인라인 SVG** 로 `index.html`/`el()` 안에 넣고 `fill="currentColor"` 로 토큰 색을 따르게 한다. 외부 아이콘 CDN 금지 (`file://` 동작 규칙).
+- Figma 에 아이콘이 있으면 **인라인 SVG** 로 넣고 `fill="currentColor"` 로 토큰 색을 따르게 한다. 외부 아이콘 CDN 금지 (`file://` 동작 규칙).
+  - **정적 아이콘**: `index.html` 마크업 안에 `<svg>…</svg>` 를 직접 쓴다 (HTML 파서가 SVG 로 만든다).
+  - **동적 아이콘**: `el()` 은 `document.createElement` 로 **HTML 요소만** 만든다 → `el('svg', …)`/`el('path', …)` 는 화면에 안 나온다. `el()` 은 그대로 두고, SVG 는 `document.createElementNS('http://www.w3.org/2000/svg', 'svg')` 로 만든 뒤 `el()` 의 자식으로 넘긴다 (`el()` 은 `Node` 자식을 그대로 붙인다).
+    ```js
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 16 16'); svg.setAttribute('width', '16'); svg.setAttribute('height', '16');
+    svg.setAttribute('fill', 'currentColor'); svg.setAttribute('aria-hidden', 'true');
+    const path = document.createElementNS(NS, 'path'); path.setAttribute('d', 'M7 2h2v12H7zM2 7h12v2H2z');   // 채움(fill) 도형
+    svg.append(path);
+    el('button', { class: 'small' }, svg, ' 추가');
+    ```
 - 이미지가 꼭 필요하면 `assets/` 폴더를 만들고 **상대 경로**(`assets/x.svg`)로 참조. 최적화 파이프라인·CDN 없음 → 올리기 전에 직접 압축.
 
 ## 6. 스타일링 방식
